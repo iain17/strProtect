@@ -34,7 +34,8 @@ wchar_t value[{{.Len}}] = { {{ range $key, $value := .Bytes }} {{ $value }}, {{ 
 
 for (unsigned int i = 0, v = 0; i < {{.Len}}; i++) {
         v = value[i];
-        v = v ^ 2;
+        v = v / 2;
+		//v = v | 10;
         value[i] = v;
 }
 `
@@ -69,7 +70,8 @@ func newProgram(input string) *program {
 func getBytes(input string) []byte {
 	result := []byte(input)
 	for i, value := range result {
-		result[i] = value / 2
+		result[i] = value * 2
+		//result[i] = value ^ 10
 	}
 	return result
 }
