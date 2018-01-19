@@ -41,6 +41,22 @@ for (unsigned int i = 0, v = 0; i < {{len .Bytes}}; i += 2, ii++) {
 }
 value[ii] = '\0';
 `
+
+const tplCppLocal = `
+// encrypted strProtect [C/C++]
+// value = "{{.Input}}"
+unsigned char value[{{len .Bytes}}];
+
+{{ range $key, $value := .Bytes }} value[{{ $key }}] = {{ $value }}; {{ end }}
+
+int ii = 0;
+for (unsigned int i = 0, v = 0; i < {{len .Bytes}}; i += 2, ii++) {
+	v = value[i] ^ value[i + 1];
+	v = v / 2;
+	value[ii] = v;
+}
+value[ii] = '\0';
+`
 var input string
 var randomByte byte
 
@@ -58,7 +74,7 @@ var cppCmd = &cobra.Command{
 	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Create a new template and parse the letter into it.
-		t := template.Must(template.New("C++").Parse(tplCpp))
+		t := template.Must(template.New("C++").Parse(tplCppLocal))
 		t.Execute(os.Stdout, newProgram(input))
 	},
 }
