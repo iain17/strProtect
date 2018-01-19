@@ -19,12 +19,14 @@ import (
 	"os"
 
 	"text/template"
+	"time"
+	"math/rand"
 )
 
 type program struct {
 	Input string
 	Len int
-	Bytes []byte
+	Bytes []uint64
 }
 
 const tplCpp = `
@@ -34,8 +36,6 @@ wchar_t value[{{.Len}}] = { {{ range $key, $value := .Bytes }} {{ $value }}, {{ 
 
 for (unsigned int i = 0, v = 0; i < {{.Len}}; i++) {
         v = value[i];
-        v = v / 2;
-		//v = sqrt(v);
         value[i] = v;
 }
 `
@@ -62,26 +62,39 @@ func newProgram(input string) *program {
 	return &program{
 		Input: input,
 		Len: len(input),
-		Bytes: getBytes(input),
+		Bytes: protect(input),
 	}
 }
 
 
-func getBytes(input string) []byte {
-	result := []byte(input)
-	for i, value := range result {
+func protect(input string) []uint64 {
+	result := make([]uint64, len(input) * 2)
+	now := time.Now().Unix()
+	ii := 0
+	for i := 0; i < len(result); i += 2 {
+		rand.Seed(now + int64(i))
+		random := rand.Uint64()
+		value := uint64(input[ii])
 		value = value * 2
-		//value = value ^ 2
-		result[i] = value
+		protectedValue := value ^ random
+
+		result[i+1] = random
+		result[i] = protectedValue
+		ii++
 	}
 	return result
 }
 
-func reverseBytes(input string) []byte {
-	result := []byte(input)
-	for i, value := range result {
+func unProtect(input []uint64) string {
+	result := make([]byte, len(input) / 2)
+	ii := 0
+	for i := 0; i < len(input); i += 2 {
+		random := input[i + 1]
+		protectedValue := input[i]
+		value := protectedValue ^ random
 		value = value / 2
-		result[i] = value
+		result[ii] = byte(value)
+		ii++
 	}
-	return result
+	return string(result)
 }
